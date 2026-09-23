@@ -1,0 +1,15 @@
+export const courses = [
+  { id: 'course-001', title: 'Python Programming and Computational Thinking', subject: 'Python', level: 'School', instructor: 'Akademix Academic Team', duration: '8 weeks', mode: 'Online', lessons: 24 },
+  { id: 'course-002', title: 'Mathematics for Data and Decision Making', subject: 'Mathematics', level: 'School', instructor: 'Akademix Academic Team', duration: '10 weeks', mode: 'Online', lessons: 30 },
+  { id: 'course-003', title: 'Foundations of Computer Science', subject: 'Computer Science & Engineering', level: 'Undergraduate', instructor: 'Akademix Academic Team', duration: '12 weeks', mode: 'Online', lessons: 36 },
+  { id: 'course-004', title: 'Artificial Intelligence: Models and Applications', subject: 'Artificial Intelligence', level: 'Undergraduate', instructor: 'Akademix Academic Team', duration: '8 weeks', mode: 'Online', lessons: 24 },
+  { id: 'course-005', title: 'Data Structures, Algorithms and Problem Solving', subject: 'Data Structures', level: 'Undergraduate', instructor: 'Akademix Academic Team', duration: '10 weeks', mode: 'Online', lessons: 30 },
+  { id: 'course-006', title: 'Corporate Finance and Financial Analysis', subject: 'Corporate Finance', level: 'Undergraduate', instructor: 'Akademix Academic Team', duration: '7 weeks', mode: 'Online', lessons: 21 },
+  { id: 'course-007', title: 'International Law and Legal Research', subject: 'International Law', level: 'Undergraduate', instructor: 'Akademix Academic Team', duration: '6 weeks', mode: 'Hybrid', lessons: 18 },
+  { id: 'course-008', title: 'Human Behaviour and Applied Psychology', subject: 'Psychology', level: 'Undergraduate', instructor: 'Akademix Academic Team', duration: '8 weeks', mode: 'Online', lessons: 24 },
+  { id: 'course-009', title: 'UI/UX Research and Product Design', subject: 'UI/UX', level: 'Professional', instructor: 'Akademix Academic Team', duration: '10 weeks', mode: 'Online', lessons: 30 },
+  { id: 'course-010', title: 'Environmental Science and Sustainable Systems', subject: 'Environmental Science', level: 'Undergraduate', instructor: 'Akademix Academic Team', duration: '6 weeks', mode: 'Online', lessons: 18 },
+  { id: 'course-011', title: 'Public Health Research Methods', subject: 'Public Health', level: 'Postgraduate', instructor: 'Akademix Academic Team', duration: '6 weeks', mode: 'Online', lessons: 16 },
+  { id: 'course-012', title: 'Research Design, Academic Writing and Integrity', subject: 'Legal Research', level: 'Research', instructor: 'Akademix Academic Team', duration: '5 weeks', mode: 'Online', lessons: 15 },
+]
+
