@@ -141,8 +141,8 @@ export default function Home() {
   )
 }
 */
-import React, { useState, useEffect, useRef } from 'react';
-import * as THREE from 'three';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   GraduationCap, 
   BookOpen, 
@@ -162,8 +162,7 @@ import {
   ShieldCheck, 
   Users, 
   Lightbulb, 
-  PlayCircle,
-  Menu
+  PlayCircle
 } from 'lucide-react';
 
 const subjectCategories = [
@@ -199,151 +198,13 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProfessor, setSelectedProfessor] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [successToast, setSuccessToast] = useState(false);
 
-  const canvasRef = useRef(null);
-
+  // Stop the page behind the popup from scrolling while it is open
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Scene setup for light dual-tone (Cream / Blush) Theme
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 32;
-
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-    // Warm gold, soft rose, and periwinkle particle field
-    const particleCount = 1600;
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(particleCount * 3);
-    const colors = new Float32Array(particleCount * 3);
-
-    const colorGold = new THREE.Color(0xd97706);
-    const colorRose = new THREE.Color(0xf472b6);
-    const colorPeriwinkle = new THREE.Color(0x818cf8);
-
-    for (let i = 0; i < particleCount * 3; i += 3) {
-      positions[i] = (Math.random() - 0.5) * 85;
-      positions[i + 1] = (Math.random() - 0.5) * 85;
-      positions[i + 2] = (Math.random() - 0.5) * 50;
-
-      const r = Math.random();
-      const mixedColor = r > 0.66 ? colorGold : r > 0.33 ? colorRose : colorPeriwinkle;
-      colors[i] = mixedColor.r;
-      colors[i + 1] = mixedColor.g;
-      colors[i + 2] = mixedColor.b;
-    }
-
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-    const material = new THREE.PointsMaterial({
-      size: 0.48,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.6,
-      blending: THREE.NormalBlending,
-    });
-
-    const particles = new THREE.Points(geometry, material);
-    scene.add(particles);
-
-    // Two floating wireframe icosahedrons for depth
-    const icoGeometry1 = new THREE.IcosahedronGeometry(13, 1);
-    const icoMaterial1 = new THREE.MeshStandardMaterial({
-      color: 0xd97706,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.15,
-    });
-    const icosahedron1 = new THREE.Mesh(icoGeometry1, icoMaterial1);
-    scene.add(icosahedron1);
-
-    const icoGeometry2 = new THREE.IcosahedronGeometry(8, 1);
-    const icoMaterial2 = new THREE.MeshStandardMaterial({
-      color: 0x818cf8,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.12,
-    });
-    const icosahedron2 = new THREE.Mesh(icoGeometry2, icoMaterial2);
-    icosahedron2.position.set(-20, 10, -10);
-    scene.add(icosahedron2);
-
-    // Ambient & Directional Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
-    scene.add(ambientLight);
-
-    const pointLight = new THREE.PointLight(0xd97706, 2.4, 65);
-    pointLight.position.set(18, 22, 22);
-    scene.add(pointLight);
-
-    const pointLight2 = new THREE.PointLight(0x818cf8, 2.4, 65);
-    pointLight2.position.set(-18, -22, 22);
-    scene.add(pointLight2);
-
-    let mouseX = 0;
-    let mouseY = 0;
-    let targetX = 0;
-    let targetY = 0;
-
-    const handleMouseMove = (event) => {
-      mouseX = (event.clientX - window.innerWidth / 2) * 0.001;
-      mouseY = (event.clientY - window.innerHeight / 2) * 0.001;
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    let animationFrameId;
-    const clock = new THREE.Clock();
-
-    const animate = () => {
-      const elapsedTime = clock.getElapsedTime();
-
-      targetX += (mouseX - targetX) * 0.05;
-      targetY += (mouseY - targetY) * 0.05;
-
-      particles.rotation.y = elapsedTime * 0.03 + targetX;
-      particles.rotation.x = elapsedTime * 0.015 + targetY;
-
-      icosahedron1.rotation.x = elapsedTime * 0.05;
-      icosahedron1.rotation.y = elapsedTime * 0.07;
-
-      icosahedron2.rotation.x = -elapsedTime * 0.04;
-      icosahedron2.rotation.y = -elapsedTime * 0.06;
-
-      renderer.render(scene, camera);
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationFrameId);
-      geometry.dispose();
-      material.dispose();
-      icoGeometry1.dispose();
-      icoMaterial1.dispose();
-      icoGeometry2.dispose();
-      icoMaterial2.dispose();
-      renderer.dispose();
-    };
-  }, []);
+    document.body.style.overflow = modalOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [modalOpen]);
 
   const handleModalSubmit = (e) => {
     e.preventDefault();
@@ -353,29 +214,15 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen text-slate-900 font-sans relative selection:bg-amber-500 selection:text-white overflow-x-hidden animated-bg">
-      {/* Animated light dual-tone gradient background + reveal animation styles */}
+    <div className="min-h-screen text-slate-900 font-sans relative selection:bg-amber-500 selection:text-white overflow-x-hidden">
+      {/* Reveal / hover animation styles (background now comes from PageBackground) */}
       <style>{`
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        .animated-bg {
-          background: linear-gradient(120deg, #FFF3DC 0%, #FDE6C8 22%, #FBD9C4 40%, #F3D9F0 60%, #E4E3FB 78%, #FFF3DC 100%);
-          background-size: 320% 320%;
-          animation: gradientShift 16s ease infinite;
-        }
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(24px); }
           to { opacity: 1; transform: translateY(0); }
         }
         .fade-up {
           animation: fadeUp 0.8s ease both;
-        }
-        @keyframes floaty {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
         }
         .hover-lift {
           transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease, border-color 0.35s ease;
@@ -417,9 +264,6 @@ export default function App() {
         nav a:hover::after {
           width: 100%;
         }
-        .logo-float {
-          animation: floaty 5s ease-in-out infinite;
-        }
         .card-anim {
           position: relative;
           overflow: hidden;
@@ -459,81 +303,14 @@ export default function App() {
         }
       `}</style>
 
-      {/* Interactive WebGL 3D Background Canvas */}
-      <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0 opacity-80" />
-
-      {/* Delicate Ambient Mesh Glow Orbs (light, dual-tone) */}
-      <div className="absolute top-0 left-1/4 w-[650px] h-[650px] bg-gradient-to-tr from-amber-200/40 via-rose-100/50 to-orange-100/30 rounded-full blur-[130px] pointer-events-none z-0" />
-      <div className="absolute top-1/3 right-10 w-[750px] h-[750px] bg-gradient-to-br from-indigo-100/40 via-rose-200/30 to-amber-100/40 rounded-full blur-[150px] pointer-events-none z-0" />
-      <div className="absolute bottom-1/4 left-10 w-[600px] h-[600px] bg-gradient-to-r from-amber-100/40 to-rose-100/40 rounded-full blur-[140px] pointer-events-none z-0" />
-
       {/* Success Toast Notification */}
-      {successToast && (
+      {successToast && createPortal(
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl bg-slate-900 text-white shadow-2xl border border-amber-500/30 animate-bounce">
           <CheckCircle2 className="w-5 h-5 text-amber-400" />
           <span className="text-sm font-medium">Match request submitted successfully! Our dean will email you shortly.</span>
-        </div>
+        </div>,
+        document.body
       )}
-
-      {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-2xl bg-white/70 border-b border-stone-300/60 shadow-sm transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20 font-bold text-xl text-white logo-float hover-glow">
-              A
-            </div>
-            <span className="font-serif text-2xl tracking-tight bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent font-bold">
-              Akademix
-            </span>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-800">
-            <a href="#subjects" className="hover:text-amber-700 transition-colors flex items-center gap-1.5"><BookOpen className="w-4 h-4" /> Subjects</a>
-            <a href="#coaching" className="hover:text-amber-700 transition-colors flex items-center gap-1.5"><Award className="w-4 h-4" /> Coaching</a>
-            <a href="#universities" className="hover:text-amber-700 transition-colors flex items-center gap-1.5"><Globe className="w-4 h-4" /> Universities</a>
-            <a href="#mentoring" className="hover:text-amber-700 transition-colors flex items-center gap-1.5"><Users className="w-4 h-4" /> Mentoring</a>
-            <a href="#careers" className="hover:text-amber-700 transition-colors flex items-center gap-1.5"><Briefcase className="w-4 h-4" /> Careers</a>
-          </nav>
-
-          <div className="hidden sm:flex items-center gap-4">
-            <button 
-              onClick={() => { setSelectedProfessor('Consultation Session'); setModalOpen(true); }}
-              className="text-sm font-semibold text-slate-800 hover:text-slate-950 px-4 py-2 transition-colors"
-            >
-              Sign In
-            </button>
-            <button 
-              onClick={() => { setSelectedProfessor('Professor Matching'); setModalOpen(true); }}
-              className="px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold text-sm shadow-lg shadow-amber-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 hover-glow"
-            >
-              Find Your Professor
-            </button>
-          </div>
-
-          <button 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-800 hover:bg-stone-200/60"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white/95 border-b border-stone-200 px-6 py-5 space-y-4 backdrop-blur-2xl shadow-xl">
-            <a href="#subjects" onClick={() => setMobileMenuOpen(false)} className="block text-slate-800 hover:text-amber-700 font-semibold">Subjects</a>
-            <a href="#coaching" onClick={() => setMobileMenuOpen(false)} className="block text-slate-800 hover:text-amber-700 font-semibold">Coaching</a>
-            <a href="#universities" onClick={() => setMobileMenuOpen(false)} className="block text-slate-800 hover:text-amber-700 font-semibold">Universities</a>
-            <a href="#mentoring" onClick={() => setMobileMenuOpen(false)} className="block text-slate-800 hover:text-amber-700 font-semibold">Mentoring</a>
-            <a href="#careers" onClick={() => setMobileMenuOpen(false)} className="block text-slate-800 hover:text-amber-700 font-semibold">Careers</a>
-            <button 
-              onClick={() => { setMobileMenuOpen(false); setModalOpen(true); }}
-              className="w-full py-3 rounded-full bg-amber-500 text-white font-semibold text-sm shadow-lg"
-            >
-              Find Your Professor
-            </button>
-          </div>
-        )}
-      </header>
 
       {/* Hero */}
       <section className="relative z-10 pt-16 pb-24 lg:pt-28 lg:pb-36 fade-up">
@@ -879,8 +656,8 @@ export default function App() {
       </footer>
 
       {/* Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+      {modalOpen && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-start justify-center px-4 pt-6 sm:pt-10 pb-6 overflow-y-auto bg-slate-900/60 backdrop-blur-md">
           <div className="relative w-full max-w-lg p-8 rounded-3xl bg-white border border-stone-300 shadow-2xl">
             <button 
               onClick={() => setModalOpen(false)}
@@ -920,7 +697,8 @@ export default function App() {
               </button>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
