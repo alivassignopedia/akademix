@@ -224,6 +224,37 @@ export default function App() {
         .fade-up {
           animation: fadeUp 0.8s ease both;
         }
+
+        /* ---- Animated hero headline ---- */
+        @keyframes wordIn {
+          from { opacity: 0; transform: translateY(30px); filter: blur(8px); }
+          to { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+        @keyframes gradientFlow {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 200% 50%; }
+        }
+        .word-in {
+          display: inline-block;
+          opacity: 0;
+          animation: wordIn 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
+        }
+        .text-shimmer {
+          display: inline-block;
+          background-image: linear-gradient(90deg, #f59e0b, #fb7185, #818cf8, #f59e0b);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          animation:
+            wordIn 0.8s cubic-bezier(0.22,1,0.36,1) 0.55s both,
+            gradientFlow 4s linear 1.4s infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .word-in, .text-shimmer { animation: none; opacity: 1; }
+        }
+        /* ---- End animated hero headline ---- */
+
         .hover-lift {
           transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease, border-color 0.35s ease;
         }
@@ -321,7 +352,16 @@ export default function App() {
           </div>
           
           <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl tracking-tight max-w-5xl mx-auto leading-[1.1] mb-8 text-slate-900">
-            Every subject, one world-class academic platform.
+            {['Learn', 'from', 'the', 'best.'].map((word, i) => (
+              <span
+                key={i}
+                className="word-in mr-[0.25em]"
+                style={{ animationDelay: `${i * 0.12}s` }}
+              >
+                {word}
+              </span>
+            ))}
+            <span className="text-shimmer">Become the best.</span>
           </h1>
 
           <p className="text-slate-700 text-lg sm:text-xl max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
