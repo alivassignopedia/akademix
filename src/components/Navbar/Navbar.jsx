@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, X, Search } from 'lucide-react'
+import { useState } from 'react'
+import { NavLink, Link } from 'react-router-dom'
+import { Menu, X } from 'lucide-react'
 import CountryTicker from '../CountryTicker/CountryTicker'
 
 const links = [
@@ -9,50 +9,129 @@ const links = [
   { to: '/subjects', label: 'Subjects' },
   { to: '/universities', label: 'Universities' },
   { to: '/countries', label: 'Countries' },
-  { to: '/courses', label: 'Courses' },
   { to: '/mentoring', label: 'Mentoring' },
   { to: '/career-guidance', label: 'Career Guidance' },
   { to: '/about', label: 'About' },
 ]
 
+const accountStorageKey = 'akademix-local-accounts'
+const sessionStorageKey = 'akademix-auth-session'
+
+function readStoredAccounts() {
+  try {
+    const accounts = JSON.parse(localStorage.getItem(accountStorageKey) || '[]')
+    return Array.isArray(accounts) ? accounts : []
+  } catch {
+    return []
+  }
+}
+
+function bytesToHex(bytes) {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
+async function hashPassword(password, salt) {
+  const encoder = new TextEncoder()
+  const key = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits'])
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 120000, hash: 'SHA-256' }, key, 256)
+  return bytesToHex(new Uint8Array(bits))
+}
+
+function saveSignedInSession(user) {
+  const session = { name: user.name, email: user.email }
+  localStorage.setItem(sessionStorageKey, JSON.stringify(session))
+  localStorage.setItem('akademix-student-profile', JSON.stringify(session))
+  return session
+}
+
 export default function Navbar() {
   const [open, setOpen] = useState(false)
-  const location = useLocation()
-  const navigate = useNavigate()
-
-  const focusSearch = () => {
-    if (location.pathname !== '/') {
-      navigate('/#global-search')
-      return
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [authMode, setAuthMode] = useState('login')
+  const [authNotice, setAuthNotice] = useState('')
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(sessionStorageKey) || 'null')
+    } catch {
+      return null
     }
+  })
+  const [profile, setProfile] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('akademix-student-profile') || 'null')
+    } catch {
+      return null
+    }
+  })
+  const [profileName, setProfileName] = useState(profile?.name || '')
+  const [profileEmail, setProfileEmail] = useState(profile?.email || '')
+  const [password, setPassword] = useState('')
 
-    const search = document.getElementById('global-search')
-
-    search?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
-    })
-
-    search?.querySelector('input')?.focus()
+  const openAuthDialog = () => {
+    setAuthMode('login')
+    setAuthNotice('')
+    setPassword('')
+    setProfileEmail(profile?.email || '')
+    setProfileOpen(true)
   }
 
-  useEffect(() => {
-    if (location.hash !== '#global-search') return undefined
+  const logOut = () => {
+    localStorage.removeItem(sessionStorageKey)
+    setCurrentUser(null)
+    setOpen(false)
+    setProfileOpen(false)
+  }
 
-    const frame = requestAnimationFrame(() => {
-      const search = document.getElementById('global-search')
+  const submitAuth = async (event) => {
+    event.preventDefault()
+    const email = profileEmail.trim().toLowerCase()
 
-      search?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      })
+    try {
+      const accounts = readStoredAccounts()
+      if (authMode === 'signup') {
+        if (accounts.some((account) => account.email === email)) {
+          setAuthNotice('An account with this email already exists. Log in instead.')
+          return
+        }
 
-      search?.querySelector('input')?.focus()
-    })
+        const salt = crypto.getRandomValues(new Uint8Array(16))
+        const account = {
+          name: profileName.trim(),
+          email,
+          salt: bytesToHex(salt),
+          passwordHash: await hashPassword(password, salt),
+        }
+        localStorage.setItem(accountStorageKey, JSON.stringify([...accounts, account]))
+        const session = saveSignedInSession(account)
+        setProfile(session)
+        setCurrentUser(session)
+        setProfileOpen(false)
+        setPassword('')
+        return
+      }
 
-    return () => cancelAnimationFrame(frame)
-  }, [location.hash])
+      const account = accounts.find((item) => item.email === email)
+      if (!account) {
+        setAuthNotice('No account was found for this email. Sign up to create one.')
+        return
+      }
 
+      const salt = new Uint8Array(account.salt.match(/.{2}/g).map((byte) => Number.parseInt(byte, 16)))
+      const passwordHash = await hashPassword(password, salt)
+      if (passwordHash !== account.passwordHash) {
+        setAuthNotice('The email or password is incorrect.')
+        return
+      }
+
+      const session = saveSignedInSession(account)
+      setProfile(session)
+      setCurrentUser(session)
+      setProfileOpen(false)
+      setPassword('')
+    } catch {
+      setAuthNotice('We could not complete that request. Please try again.')
+    }
+  }
   return (
     <header className="sticky top-0 z-50">
       {/* Country ticker */}
@@ -125,21 +204,10 @@ export default function Navbar() {
           ========================== */}
           <div className="hidden xl:flex items-center gap-3 shrink-0">
 
-            {/* Search */}
+            {/* Login and sign up */}
             <button
-              aria-label="Search"
-              onClick={focusSearch}
-              className="
-                text-slate-800
-                hover:text-amber-700
-                transition-colors
-              "
-            >
-              <Search size={18} />
-            </button>
-
-            {/* Login */}
-            <button
+              type="button"
+              onClick={currentUser ? logOut : openAuthDialog}
               className="
                 text-sm
                 font-semibold
@@ -150,12 +218,12 @@ export default function Navbar() {
                 transition-colors
               "
             >
-              Login
+              {currentUser ? 'Log out' : 'Login / Sign up'}
             </button>
 
             {/* Get Guidance */}
             <Link
-              to="/professors"
+              to="/assignment-guidance"
               className="
                 px-5
                 py-2.5
@@ -177,7 +245,7 @@ export default function Navbar() {
                 whitespace-nowrap
               "
             >
-              Get Guidance
+              Assignment Guidance
             </Link>
           </div>
 
@@ -251,9 +319,13 @@ export default function Navbar() {
               </NavLink>
             ))}
 
+            <button type="button" onClick={currentUser ? logOut : () => { setOpen(false); openAuthDialog() }} className="py-2.5 text-left text-sm font-semibold text-slate-800 hover:text-amber-700">
+              {currentUser ? 'Log out' : 'Login / Sign up'}
+            </button>
+
             {/* Mobile CTA */}
             <Link
-              to="/professors"
+              to="/assignment-guidance"
               onClick={() => setOpen(false)}
               className="
                 mt-4
@@ -274,9 +346,33 @@ export default function Navbar() {
                 hover:to-amber-700
               "
             >
-              Find Your Professor
+              Assignment Guidance
             </Link>
           </nav>
+        </div>
+      )}
+
+      {profileOpen && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/50 p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) setProfileOpen(false) }}>
+          <section role="dialog" aria-modal="true" aria-labelledby="student-profile-title" className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-6 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div><p className="eyebrow mb-1">Akademix account</p><h2 id="student-profile-title" className="font-display text-2xl text-ink">{authMode === 'login' ? 'Welcome back' : 'Create your account'}</h2><p className="mt-2 text-sm text-slate">{authMode === 'login' ? 'Log in to your student account.' : 'Sign up to get started with Akademix.'}</p></div>
+              <button type="button" aria-label="Close login dialog" onClick={() => setProfileOpen(false)} className="rounded-lg p-2 text-slate hover:bg-stone"><X size={18} /></button>
+            </div>
+            <div className="mb-5 grid grid-cols-2 rounded-xl bg-stone p-1">
+              {['login', 'signup'].map((mode) => <button key={mode} type="button" aria-pressed={authMode === mode} onClick={() => { setAuthMode(mode); setAuthNotice('') }} className={`rounded-lg py-2 text-sm font-medium capitalize transition-colors ${authMode === mode ? 'bg-white text-ink shadow-sm' : 'text-slate hover:text-ink'}`}>{mode === 'login' ? 'Log in' : 'Sign up'}</button>)}
+            </div>
+            <form onSubmit={submitAuth} className="space-y-4">
+              {authMode === 'signup' && <label className="block text-sm font-medium text-ink">Name<input required maxLength={80} value={profileName} onChange={(event) => setProfileName(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete="name" /></label>}
+              <label className="block text-sm font-medium text-ink">Email<input required type="email" maxLength={254} value={profileEmail} onChange={(event) => setProfileEmail(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete="email" /></label>
+              <label className="block text-sm font-medium text-ink">Password<input required minLength={8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete={authMode === 'login' ? 'current-password' : 'new-password'} /></label>
+              {authNotice && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-ink">{authNotice}</p>}
+              <div className="flex flex-wrap justify-end gap-3 pt-1">
+                <button type="button" onClick={() => setProfileOpen(false)} className="btn-secondary">Cancel</button>
+                <button type="submit" className="btn-primary">{authMode === 'login' ? 'Log in' : 'Create account'}</button>
+              </div>
+            </form>
+          </section>
         </div>
       )}
     </header>
