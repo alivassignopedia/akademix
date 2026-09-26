@@ -5,6 +5,7 @@ import Footer from './components/Footer/Footer'
 import HelpChat from './components/HelpChat/HelpChat'
 import PageBackground from './pages/PageBackground'
 import AppRoutes from './routes/AppRoutes'
+import IntroSplash from './components/Introduction/IntroSplash'
 
 export default function App() {
   const location = useLocation()
@@ -49,6 +50,8 @@ export default function App() {
 
   return (
     <div className="site-root min-h-screen">
+      <IntroSplash />
+
       {/* Shared animated background */}
       <PageBackground />
 

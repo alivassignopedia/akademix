@@ -1,147 +1,5 @@
-/*
-import { Link } from 'react-router-dom'
-import Hero from '../../components/Hero/Hero'
-import StudentJourney from '../../components/StudentJourney/StudentJourney'
-import FindProfessorFlow from '../../components/FindProfessorFlow/FindProfessorFlow'
-import CareerExplorer from '../../components/CareerExplorer/CareerExplorer'
-import SubjectCard from '../../components/SubjectCard/SubjectCard'
-import UniversityCard from '../../components/UniversityCard/UniversityCard'
-import { subjectCategories } from '../../data/subjects'
-import { universities } from '../../data/universities'
-import { mentorCategories } from '../../data/mentors'
 
-const featuredSubjects = subjectCategories.flatMap((c) =>
-  c.subjects.slice(0, 2).map((name) => ({ slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name }))
-).slice(0, 9)
-
-export default function Home() {
-  return (
-    <div>
-      <Hero />
-      <StudentJourney />
-      <FindProfessorFlow />
-
-      <section className="border-b border-line">
-        <div className="container-content py-16">
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <p className="eyebrow mb-2">Explore subjects</p>
-              <h2 className="font-display text-3xl md:text-4xl text-ink">
-                Every subject, one platform.
-              </h2>
-            </div>
-            <Link to="/subjects" className="hidden sm:block text-sm text-ink hover:text-brass-dark">
-              View all subjects →
-            </Link>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {featuredSubjects.map((s) => (
-              <SubjectCard key={s.slug} subject={s} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-line bg-white">
-        <div className="container-content py-16">
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <p className="eyebrow mb-2">Learn with Akademix</p>
-              <h2 className="font-display text-3xl md:text-4xl text-ink">
-                Coaching, beyond the classroom.
-              </h2>
-            </div>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {[
-              'School Coaching',
-              'Entrance Preparation',
-              'University Subjects',
-              'Professional Courses',
-              'Skill Development',
-              'Exam Preparation',
-              'Research Support',
-              'Career Preparation',
-            ].map((label) => (
-              <div key={label} className="card px-5 py-6 text-ink text-sm font-medium">
-                {label}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-line">
-        <div className="container-content py-16">
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <p className="eyebrow mb-2">Global universities</p>
-              <h2 className="font-display text-3xl md:text-4xl text-ink">
-                Explore universities worldwide.
-              </h2>
-            </div>
-            <Link to="/universities" className="hidden sm:block text-sm text-ink hover:text-brass-dark">
-              View all universities →
-            </Link>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {universities.slice(0, 6).map((u) => (
-              <UniversityCard key={u.id} university={u} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-line">
-        <div className="container-content py-16">
-          <p className="eyebrow mb-2">One-to-one mentoring</p>
-          <h2 className="font-display text-3xl md:text-4xl text-ink mb-8">
-            Find a mentor for exactly where you are.
-          </h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {mentorCategories.map((m) => (
-              <div key={m.slug} className="card px-5 py-5">
-                <p className="text-ink font-medium">{m.name}</p>
-                <p className="text-sm text-slate mt-1">{m.description}</p>
-              </div>
-            ))}
-          </div>
-          <Link to="/mentoring" className="btn-secondary mt-8 inline-flex">
-            Find a Mentor
-          </Link>
-        </div>
-      </section>
-
-      <section className="border-b border-line bg-white">
-        <div className="container-content py-16">
-          <p className="eyebrow mb-2">Assignment guidance</p>
-          <h2 className="font-display text-3xl md:text-4xl text-ink mb-4 max-w-2xl">
-            Structured guidance, not shortcuts.
-          </h2>
-          <p className="text-slate max-w-xl">
-            Get structured academic guidance, concept clarification, research direction and
-            feedback to help you understand and complete your academic work independently.
-          </p>
-        </div>
-      </section>
-
-      <CareerExplorer />
-
-      <section>
-        <div className="container-content py-16 text-center">
-          <h2 className="font-display text-3xl md:text-4xl text-ink mb-4">
-            Tell us where you are. We'll help you find the way.
-          </h2>
-          <Link to="/professors" className="btn-primary mt-2 inline-flex">
-            Find Your Professor
-          </Link>
-        </div>
-      </section>
-    </div>
-  )
-}
-*/
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SearchBar from '../../components/Search/SearchBar';
 import ProfessorAvatar from '../../components/ProfessorAvatar/ProfessorAvatar';
@@ -170,49 +28,30 @@ import {
 
 function AnimatedStat({ value, suffix = '', decimals = 0 }) {
   const [count, setCount] = useState(0)
-  const counterRef = useRef(null)
 
   useEffect(() => {
-    const element = counterRef.current
-    if (!element) return undefined
-
     let frameId
-    let hasStarted = false
-    const duration = 1600
-    const finish = () => setCount(value)
     const start = () => {
-      if (hasStarted) return
-      hasStarted = true
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        finish()
-        return
-      }
-
+      const duration = 1600
       const startedAt = performance.now()
       const animate = (now) => {
         const progress = Math.min((now - startedAt) / duration, 1)
         const easedProgress = 1 - (1 - progress) ** 4
         setCount(value * easedProgress)
         if (progress < 1) frameId = requestAnimationFrame(animate)
-        else finish()
+        else setCount(value)
       }
       frameId = requestAnimationFrame(animate)
     }
 
-    if (!('IntersectionObserver' in window)) {
+    if (document.documentElement.dataset.introSplash === 'active') {
+      window.addEventListener('intro-splash-complete', start, { once: true })
+    } else {
       start()
-      return () => cancelAnimationFrame(frameId)
     }
 
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return
-      start()
-      observer.disconnect()
-    }, { threshold: 0.45 })
-    observer.observe(element)
-
     return () => {
-      observer.disconnect()
+      window.removeEventListener('intro-splash-complete', start)
       cancelAnimationFrame(frameId)
     }
   }, [value])
@@ -223,7 +62,7 @@ function AnimatedStat({ value, suffix = '', decimals = 0 }) {
   }).format(count)
 
   return (
-    <span ref={counterRef} aria-label={`${new Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value)}${suffix}`}>
+    <span aria-label={`${new Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value)}${suffix}`}>
       <span aria-hidden="true">{formattedCount}{suffix}</span>
     </span>
   )
@@ -728,7 +567,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Final CTA */}
+     
       <section className="relative z-10 py-24 border-t border-stone-300/60 bg-gradient-to-b from-white/60 to-stone-100/60 text-center">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="font-serif text-3xl sm:text-5xl text-slate-900 mb-6">
